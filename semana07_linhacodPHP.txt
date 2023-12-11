@@ -1,0 +1,106 @@
+//regras de estoque
+public function adicionarProduto($quantidade) {
+        if ($quantidade < 0) {
+            throw new InvalidArgumentException("A quantidade de produtos a ser adicionada deve ser não negativa.");
+        }
+
+        $this->quantidadeEstoque += $quantidade;
+    }
+
+    public function removerProduto($quantidade) {
+        if ($quantidade < 0) {
+            throw new InvalidArgumentException("A quantidade de produtos a ser removida deve ser não negativa.");
+        }
+
+        if ($quantidade > $this->quantidadeEstoque) {
+            throw new RuntimeException("Erro: A quantidade solicitada é maior que o estoque disponível.");
+        }
+
+        $this->quantidadeEstoque -= $quantidade;
+    }
+}
+
+
+//tratando erros
+    public function adicionarProduto($quantidade) {
+        try {
+            if ($quantidade < 0) {
+                throw new InvalidArgumentException("Erro: A quantidade de produtos a ser adicionada deve ser não negativa.");
+            }
+
+            $this->quantidadeEstoque += $quantidade;
+        } catch (InvalidArgumentException $e) {
+            echo "Erro ao adicionar produto: " . $e->getMessage() . PHP_EOL;
+        }
+    }
+
+    public function removerProduto($quantidade) {
+        try {
+            if ($quantidade < 0) {
+                throw new InvalidArgumentException("Erro: A quantidade de produtos a ser removida deve ser não negativa.");
+            }
+
+            if ($quantidade > $this->quantidadeEstoque) {
+                throw new RuntimeException("Erro: A quantidade solicitada é maior que o estoque disponível.");
+            }
+
+            $this->quantidadeEstoque -= $quantidade;
+        } catch (InvalidArgumentException $e) {
+            echo "Erro ao remover produto: " . $e->getMessage() . PHP_EOL;
+        } catch (RuntimeException $e) {
+            echo "Erro ao remover produto: " . $e->getMessage() . PHP_EOL;
+        }
+    }
+
+//criar metodos de pagamento
+
+interface MeioDePagamento {
+    public function processarPagamento($valor);
+}
+
+class Pix implements MeioDePagamento {
+    private $chavePix;
+
+    public function __construct($chavePix) {
+        $this->chavePix = $chavePix;
+    }
+
+    public function processarPagamento($valor) {
+        echo "Pagamento de R$ {$valor} realizado via Pix. Chave Pix: {$this->chavePix}" . PHP_EOL;
+    }
+}
+
+class CartaoDeCredito implements MeioDePagamento {
+    private $numeroCartao;
+    private $nomeTitular;
+    private $dataExpiracao;
+    private $codigoSeguranca;
+
+    public function __construct($numeroCartao, $nomeTitular, $dataExpiracao, $codigoSeguranca) {
+        $this->numeroCartao = $numeroCartao;
+        $this->nomeTitular = $nomeTitular;
+        $this->dataExpiracao = $dataExpiracao;
+        $this->codigoSeguranca = $codigoSeguranca;
+    }
+
+    public function processarPagamento($valor) {
+        echo "Pagamento de R$ {$valor} realizado via Cartão de Crédito." . PHP_EOL;
+        echo "Número do Cartão: {$this->numeroCartao}" . PHP_EOL;
+        echo "Nome do Titular: {$this->nomeTitular}" . PHP_EOL;
+        echo "Data de Expiração: {$this->dataExpiracao}" . PHP_EOL;
+        echo "Código de Segurança: {$this->codigoSeguranca}" . PHP_EOL;
+    }
+}
+
+class Boleto implements MeioDePagamento {
+    private $codigoDeBarras;
+
+    public function __construct($codigoDeBarras) {
+        $this->codigoDeBarras = $codigoDeBarras;
+    }
+
+    public function processarPagamento($valor) {
+        echo "Pagamento de R$ {$valor} realizado via Boleto Bancário." . PHP_EOL;
+        echo "Código de Barras: {$this->codigoDeBarras}" . PHP_EOL;
+    }
+}
