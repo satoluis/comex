@@ -1,0 +1,169 @@
+<?php
+
+$livrosTolkien = [
+    'O Senhor dos Anéis: A Sociedade do Anel' => [
+        'autor' => 'J.R.R. Tolkien',
+        'preco' => 39.90,
+        'estoque' => 100
+    ],
+    'O Senhor dos Anéis: As Duas Torres' => [
+        'autor' => 'J.R.R. Tolkien',
+        'preco' => 42.50,
+        'estoque' => 80
+    ],
+    'O Senhor dos Anéis: O Retorno do Rei' => [
+        'autor' => 'J.R.R. Tolkien',
+        'preco' => 45.20,
+        'estoque' => 120
+    ],
+    'O Hobbit' => [
+        'autor' => 'J.R.R. Tolkien',
+        'preco' => 29.99,
+        'estoque' => 150
+    ],
+    'Silmarillion' => [
+        'autor' => 'J.R.R. Tolkien',
+        'preco' => 35.75,
+        'estoque' => 60
+    ],
+];
+
+// Exibindo cada livro do Tolkien
+foreach ($livrosTolkien as $titulo => $detalhes) {
+    echo "Título: {$titulo}" . PHP_EOL;
+    echo "Autor: {$detalhes['autor']}" . PHP_EOL;
+    echo "Preço: R$ {$detalhes['preco']}" . PHP_EOL;
+    echo "Estoque: {$detalhes['estoque']} unidades" . PHP_EOL;
+    echo PHP_EOL; // Adiciona uma linha em branco entre os livros
+}
+
+//
+
+<?php
+
+$estoqueProdutos = [];
+
+function adicionarProduto($nome, $autor, $preco, $quantidade) {
+    global $estoqueProdutos;
+    $estoqueProdutos[$nome] = [
+        'autor' => $autor,
+        'preco' => $preco,
+        'quantidade' => $quantidade
+    ];
+}
+
+function removerProduto($nome) {
+    global $estoqueProdutos;
+    if (isset($estoqueProdutos[$nome])) {
+        unset($estoqueProdutos[$nome]);
+        return true;
+    }
+    return false;
+}
+
+function verificarDisponibilidade($nome, $quantidadeDesejada) {
+    global $estoqueProdutos;
+    return isset($estoqueProdutos[$nome]) && $estoqueProdutos[$nome]['quantidade'] >= $quantidadeDesejada;
+}
+
+// Adicionando produtos ao estoque
+adicionarProduto('O Senhor dos Anéis: A Sociedade do Anel', 'J.R.R. Tolkien', 39.90, 100);
+adicionarProduto('O Senhor dos Anéis: As Duas Torres', 'J.R.R. Tolkien', 42.50, 80);
+adicionarProduto('O Senhor dos Anéis: O Retorno do Rei', 'J.R.R. Tolkien', 45.20, 120);
+adicionarProduto('O Hobbit', 'J.R.R. Tolkien', 29.99, 150);
+adicionarProduto('Silmarillion', 'J.R.R. Tolkien', 35.75, 60);
+
+// Exibindo cada produto no estoque
+foreach ($estoqueProdutos as $nome => $detalhes) {
+    echo "Produto: {$nome}" . PHP_EOL;
+    echo "Autor: {$detalhes['autor']}" . PHP_EOL;
+    echo "Preço: R$ {$detalhes['preco']}" . PHP_EOL;
+    echo "Quantidade em estoque: {$detalhes['quantidade']} unidades" . PHP_EOL;
+    echo PHP_EOL; // Adiciona uma linha em branco entre os produtos
+}
+
+// Removendo um produto do estoque
+$produtoRemovido = 'O Hobbit';
+if (removerProduto($produtoRemovido)) {
+    echo "O produto '{$produtoRemovido}' foi removido do estoque." . PHP_EOL;
+} else {
+    echo "O produto '{$produtoRemovido}' não foi encontrado no estoque." . PHP_EOL;
+}
+
+// Verificando a disponibilidade de um produto específico
+$produtoDesejado = 'Silmarillion';
+$quantidadeDesejada = 5;
+if (verificarDisponibilidade($produtoDesejado, $quantidadeDesejada)) {
+    echo "O produto '{$produtoDesejado}' está disponível em estoque. Quantidade disponível: {$estoqueProdutos[$produtoDesejado]['quantidade']}" . PHP_EOL;
+} else {
+    echo "O produto '{$produtoDesejado}' não está disponível em estoque." . PHP_EOL;
+}
+
+//
+
+function encontrarProdutosExtremos($estoqueProdutos) {
+    $produto_mais_caro = null;
+    $produto_mais_barato = null;
+
+    foreach ($estoqueProdutos as $nome => $detalhes) {
+        if ($produto_mais_caro === null || $detalhes['preco'] > $estoqueProdutos[$produto_mais_caro]['preco']) {
+            $produto_mais_caro = $nome;
+        }
+
+        if ($produto_mais_barato === null || $detalhes['preco'] < $estoqueProdutos[$produto_mais_barato]['preco']) {
+            $produto_mais_barato = $nome;
+        }
+    }
+
+    return [
+        'produto_mais_caro' => $produto_mais_caro,
+        'produto_mais_barato' => $produto_mais_barato
+    ];
+}
+
+// Chamando a função e exibindo os resultados
+$resultados = encontrarProdutosExtremos($estoqueProdutos);
+
+echo "Produto mais caro: {$resultados['produto_mais_caro']}" . PHP_EOL;
+echo "Preço: R$ {$estoqueProdutos[$resultados['produto_mais_caro']]['preco']}" . PHP_EOL;
+echo PHP_EOL;
+
+echo "Produto mais barato: {$resultados['produto_mais_barato']}" . PHP_EOL;
+echo "Preço: R$ {$estoqueProdutos[$resultados['produto_mais_barato']]['preco']}" . PHP_EOL;
+
+$cliente = [
+    'nome' => 'João da Silva Sauro',
+    'email' => 'joaossauro@email.com',
+    'celular' => '(14) 98765-4321',
+    'endereco' => 'Rua Principal, 123, Bairro Central, Cidade'
+];
+
+// Exibindo os dados do cliente
+echo "Nome: {$cliente['nome']}" . PHP_EOL;
+echo "E-mail: {$cliente['email']}" . PHP_EOL;
+echo "Celular: {$cliente['celular']}" . PHP_EOL;
+echo "Endereço: {$cliente['endereco']}" . PHP_EOL;
+
+
+function calcularDesconto($valorCompra) {
+    if ($valorCompra >= 100.00) {
+        // Aplica desconto de 10% se o valor da compra for maior ou igual a R$ 100,00
+        $desconto = 0.10 * $valorCompra;
+        $valorComDesconto = $valorCompra - $desconto;
+        return $valorComDesconto;
+    } else {
+        // Retorna o valor original se o valor da compra for menor que R$ 100,00
+        return $valorCompra;
+    }
+}
+
+// Exemplo de uso da função
+$valorInicial = 120.00;
+
+// Chama a função para calcular o desconto
+$valorFinal = calcularDesconto($valorInicial);
+
+// Exibe os resultados
+echo "Valor inicial da compra: R$ {$valorInicial}" . PHP_EOL;
+echo "Valor final com desconto: R$ {$valorFinal}" . PHP_EOL;
+
