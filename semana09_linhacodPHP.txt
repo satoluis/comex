@@ -1,0 +1,240 @@
+//config PDO
+
+<?php
+
+$caminhoBanco = __DIR__ . '/banco.sqlite';
+$pdo = new PDO('sqlite:' . $caminhoBanco);
+
+echo 'Conectado';
+
+$createTableSql = "CREATE TABLE IF NOT EXISTS Cliente (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    nome VARCHAR(255) NOT NULL,
+    email VARCHAR(255) NOT NULL,
+    celular VARCHAR(15) NOT NULL,
+    endereco TEXT,
+    totalCompras DECIMAL(10, 2),
+    dataCadastro TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS Produto (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    nome VARCHAR(255) NOT NULL,
+    preco DECIMAL(10, 2) NOT NULL,
+    quantidadeEmEstoque INT NOT NULL,
+    dataCadastro TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS Pedido (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    clienteId INT NOT NULL,
+    dataPedido DATE,
+    valorTotal DECIMAL(10, 2),
+    status VARCHAR(50),
+    dataCadastro TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (clienteId) REFERENCES Cliente(id)
+);"
+
+// criando tabelas
+
+<?php
+
+$caminhoBanco = __DIR__ . '/banco.sqlite';
+$pdo = new PDO('sqlite:' . $caminhoBanco);
+
+echo 'Conectei';
+
+$createTableSql = "CREATE TABLE IF NOT EXISTS Cliente (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    nome VARCHAR(255) NOT NULL,
+    email VARCHAR(255) NOT NULL,
+    celular VARCHAR(15) NOT NULL,
+    endereco TEXT,
+    totalCompras DECIMAL(10, 2),
+    dataCadastro TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS Produto (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    nome VARCHAR(255) NOT NULL,
+    preco DECIMAL(10, 2) NOT NULL,
+    quantidadeEmEstoque INT NOT NULL,
+    dataCadastro TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS Pedido (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    clienteId INT NOT NULL,
+    dataPedido DATE,
+    valorTotal DECIMAL(10, 2),
+    status VARCHAR(50),
+    dataCadastro TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (clienteId) REFERENCES Cliente(id)
+);";
+
+//criando as DAOs
+
+<?php
+
+use Comex\Modelo\Cliente\Cliente;
+
+class ClienteDAO {
+    private $pdo;
+
+    public function __construct(PDO $pdo) {
+        $this->pdo = $pdo;
+    }
+
+    public function salvar(Cliente $cliente) {
+        $stmt = $this->pdo->prepare('INSERT INTO Cliente (nome, email, celular, endereco, totalCompras) VALUES (?, ?, ?, ?, ?)');
+        $stmt->execute([$cliente->getNome(), $cliente->getEmail(), $cliente->getCelular(), $cliente->getEndereco(), $cliente->getTotalCompras()]);
+        return $this->pdo->lastInsertId();
+    }
+
+    public function buscar($id) {
+        $stmt = $this->pdo->prepare('SELECT * FROM Cliente WHERE id = ?');
+        $stmt->execute([$id]);
+        return $stmt->fetch(PDO::FETCH_ASSOC);
+    }
+
+    public function atualizar(Cliente $cliente) {
+        $stmt = $this->pdo->prepare('UPDATE Cliente SET nome = ?, email = ?, celular = ?, endereco = ?, totalCompras = ? WHERE id = ?');
+        $stmt->execute([$cliente->getNome(), $cliente->getEmail(), $cliente->getCelular(), $cliente->getEndereco(), $cliente->getTotalCompras()]);
+    }
+
+    public function apagar($id) {
+        $stmt = $this->pdo->prepare('DELETE FROM Cliente WHERE id = ?');
+        $stmt->execute([$id]);
+    }
+}
+?>
+
+<?php 
+use Comex\Modelo\Produto\Pedido;
+
+class PedidoDAO {
+    private $pdo;
+
+    public function __construct(PDO $pdo) {
+        $this->pdo = $pdo;
+    }
+
+    public function salvar(Pedido $pedido) {
+        $stmt = $this->pdo->prepare('INSERT INTO Pedido (clienteId, dataPedido, valorTotal, status) VALUES (?, ?, ?, ?)');
+        $stmt->execute([$pedido->getCliente(), $pedido->getProdutos() ]);
+        return $this->pdo->lastInsertId();
+    }
+
+    public function buscar($id) {
+        $stmt = $this->pdo->prepare('SELECT * FROM Pedido WHERE id = ?');
+        $stmt->execute([$id]);
+        return $stmt->fetch(PDO::FETCH_ASSOC);
+    }
+
+    public function atualizar(Pedido $pedido) {
+        $stmt = $this->pdo->prepare('UPDATE Pedido SET clienteId = ?, dataPedido = ?, valorTotal = ?, status = ? WHERE id = ?');
+        $stmt->execute([$pedido->getCliente(), $pedido->getProdutos()]);
+    }
+
+    public function apagar($id) {
+        $stmt = $this->pdo->prepare('DELETE FROM Pedido WHERE id = ?');
+        $stmt->execute([$id]);
+    }
+}
+?>
+
+<?php 
+use Comex\Modelo\Produto\Produto;
+
+
+class ProdutoDAO {
+    private $pdo;
+
+    public function __construct(PDO $pdo) {
+        $this->pdo = $pdo;
+    }
+
+    public function salvar(Produto $produto) {
+        $stmt = $this->pdo->prepare('INSERT INTO Produto (nome, preco, quantidadeEmEstoque) VALUES (?, ?, ?)');
+        $stmt->execute([$produto->getNome(), $produto->getPreco(), $produto->getQuantidade()]);
+        return $this->pdo->lastInsertId();
+    }
+
+    public function buscar($id) {
+        $stmt = $this->pdo->prepare('SELECT * FROM Produto WHERE id = ?');
+        $stmt->execute([$id]);
+        return $stmt->fetch(PDO::FETCH_ASSOC);
+    }
+
+    public function atualizar(Produto $produto) {
+        $stmt = $this->pdo->prepare('UPDATE Produto SET nome = ?, preco = ?, quantidadeEmEstoque = ? WHERE id = ?');
+        $stmt->execute([$produto->getNome(), $produto->getPreco(), $produto->getQuantidade()]);
+    }
+
+    public function apagar($id) {
+        $stmt = $this->pdo->prepare('DELETE FROM Produto WHERE id = ?');
+        $stmt->execute([$id]);
+    }
+}
+
+//cadastrando produtos
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cadastro de Produto</title>
+</head>
+<body>
+    <h1>Cadastro de Produto</h1>
+    <form action="salvar_produto.php" method="POST">
+        <label for="nome">Nome do Produto:</label>
+        <input type="text" name="nome" id="nome" required>
+        <br>
+
+        <label for="preco">Preço:</label>
+        <input type="number" step="0.01" name="preco" id="preco" required>
+        <br>
+
+        <label for="quantidade">Quantidade em Estoque:</label>
+        <input type="number" name="quantidade" id="quantidade" required>
+        <br>
+
+        <input type="submit" value="Cadastrar Produto">
+    </form>
+</body>
+</html>
+
+//cadastrando clientes
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cadastro de Cliente</title>
+</head>
+<body>
+    <h1>Cadastro de Cliente</h1>
+    <form action="salvar_cliente.php" method="POST">
+        <label for="nome">Nome:</label>
+        <input type="text" name="nome" id="nome" required>
+        <br>
+
+        <label for="email">E-mail:</label>
+        <input type="email" name="email" id="email" required>
+        <br>
+
+        <label for="celular">Celular:</label>
+        <input type="text" name="celular" id="celular" required>
+        <br>
+
+        <label for="endereco">Endereço:</label>
+        <textarea name="endereco" id="endereco" required></textarea>
+        <br>
+
+        <input type="submit" value="Cadastrar Cliente">
+    </form>
+</body>
+</html>
