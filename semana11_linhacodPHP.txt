@@ -1,0 +1,257 @@
+//refatorando CRUD
+
+// app/Repositories/CategoriaRepositoryInterface.php
+
+namespace App\Repositories;
+
+use App\Models\Categoria;
+
+interface CategoriaRepositoryInterface
+{
+    public function all();
+
+    public function find($id);
+
+    public function create(array $data);
+
+    public function update($id, array $data);
+
+    public function delete($id);
+}
+
+// app/Repositories/EloquentCategoriaRepository.php
+
+namespace App\Repositories;
+
+use App\Models\Categoria;
+
+class EloquentCategoriaRepository implements CategoriaRepositoryInterface
+{
+    public function all()
+    {
+        return Categoria::all();
+    }
+
+    public function find($id)
+    {
+        return Categoria::findOrFail($id);
+    }
+
+    public function create(array $data)
+    {
+        return Categoria::create($data);
+    }
+
+    public function update($id, array $data)
+    {
+        $categoria = Categoria::findOrFail($id);
+        $categoria->update($data);
+        return $categoria;
+    }
+
+    public function delete($id)
+    {
+        Categoria::findOrFail($id)->delete();
+    }
+}
+// app/Providers/CategoriaRepositoryServiceProvider.php
+
+namespace App\Providers;
+
+use Illuminate\Support\ServiceProvider;
+use App\Repositories\CategoriaRepositoryInterface;
+use App\Repositories\EloquentCategoriaRepository;
+
+class CategoriaRepositoryServiceProvider extends ServiceProvider
+{
+    public function register()
+    {
+        $this->app->bind(
+            CategoriaRepositoryInterface::class,
+            EloquentCategoriaRepository::class
+        );
+    }
+}
+// config/app.php
+
+'providers' => [
+    // ...
+
+    App\Providers\CategoriaRepositoryServiceProvider::class,
+
+    // ...
+],
+// app/Http/Controllers/CategoriaController.php
+
+use App\Repositories\CategoriaRepositoryInterface;
+
+class CategoriaController extends Controller
+{
+    protected $categoriaRepository;
+
+    public function __construct(CategoriaRepositoryInterface $categoriaRepository)
+    {
+        $this->categoriaRepository = $categoriaRepository;
+    }
+
+}
+
+//autenticacao e autorizacao
+
+php artisan make:migration create_users_table
+
+// Em database/migrations/xxxx_xx_xx_create_users_table.php
+
+public function up()
+{
+    Schema::create('users', function (Blueprint $table) {
+        $table->id();
+        $table->string('name');
+        $table->string('email')->unique();
+        $table->string('password');
+        $table->rememberToken();
+        $table->timestamps();
+    });
+}
+
+php artisan migrate
+php artisan make:model User
+
+// Em app/Http/Controllers/Auth/LoginController.php
+
+use AuthenticatesUsers;
+
+protected $redirectTo = '/categorias'; // Rota para redirecionar após o login
+
+// Em app/Http/Controllers/Auth/RegisterController.php
+
+use RegistersUsers;
+
+protected $redirectTo = '/categorias'; // Rota para redirecionar após o cadastro
+
+// Em app/Http/Kernel.php
+
+protected $middlewareGroups = [
+    'web' => [
+        // ...
+        \App\Http\Middleware\Authenticate::class,
+        // ...
+    ],
+    // ...
+];
+
+// Em resources/views/layouts/app.blade.php
+
+@if (Auth::check())
+    <!-- Mostrar botões de adicionar, editar, remover -->
+    <!-- Link para logout -->
+@else
+    <!-- Mostrar link para login ou cadastro -->
+@endif
+
+// Em routes/web.php
+
+Route::group(['middleware' => 'auth'], function () {
+    // Rotas acessíveis apenas para usuários logados
+    Route::get('/categorias', 'CategoriaController@index');
+    // ...
+});
+
+Route::group(['middleware' => 'guest'], function () {
+    // Rotas acessíveis apenas para usuários não logados
+    Route::get('/login', 'Auth\LoginController@showLoginForm');
+    Route::post('/login', 'Auth\LoginController@login');
+    Route::get('/register', 'Auth\RegisterController@showRegistrationForm');
+    Route::post('/register', 'Auth\RegisterController@register');
+});
+
+// Em routes/web.php
+
+Route::post('/logout', 'Auth\LoginController@logout');
+
+// Em resources/views/layouts/app.blade.php
+
+@if (Auth::check())
+    <a href="/logout">Logout</a>
+@else
+    <a href="/login">Login</a>
+@endif
+
+//testes
+
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\TestCase;
+use App\Models\Categoria;
+use App\Repositories\CategoriaRepository;
+
+class CategoriaRepositoryTest extends TestCase
+{
+    use RefreshDatabase;
+
+    protected $categoriaRepository;
+
+    public function setUp(): void
+    {
+        parent::setUp();
+
+        $this->categoriaRepository = new CategoriaRepository(new Categoria());
+    }
+
+    /** @test */
+    public function pode_adicionar_uma_nova_categoria()
+    {
+        $dadosCategoria = [
+            'nome' => 'Nova Categoria',
+        ];
+
+        $novaCategoria = $this->categoriaRepository->criar($dadosCategoria);
+
+        $this->assertDatabaseHas('categorias', $dadosCategoria);
+        $this->assertInstanceOf(Categoria::class, $novaCategoria);
+        $this->assertEquals($dadosCategoria['nome'], $novaCategoria->nome);
+    }
+
+    /** @test */
+    public function pode_atualizar_uma_categoria_existente()
+    {
+        $categoriaExistente = factory(Categoria::class)->create();
+
+        $dadosAtualizados = [
+            'nome' => 'Categoria Atualizada',
+        ];
+
+        $this->categoriaRepository->atualizar($categoriaExistente->id, $dadosAtualizados);
+
+        $this->assertDatabaseHas('categorias', $dadosAtualizados);
+    }
+
+    /** @test */
+    public function pode_excluir_uma_categoria()
+    {
+        $categoriaExistente = factory(Categoria::class)->create();
+
+        $this->categoriaRepository->excluir($categoriaExistente->id);
+
+        $this->assertDatabaseMissing('categorias', ['id' => $categoriaExistente->id]);
+    }
+
+    /** @test */
+    public function pode_obter_todas_as_categorias()
+    {
+        factory(Categoria::class, 3)->create();
+
+        $categorias = $this->categoriaRepository->listarTodas();
+
+        $this->assertCount(3, $categorias);
+    }
+
+    /** @test */
+    public function pode_obter_uma_categoria_por_id()
+    {
+        $categoriaExistente = factory(Categoria::class)->create();
+
+        $categoriaRecuperada = $this->categoriaRepository->obterPorId($categoriaExistente->id);
+
+        $this->assertEquals($categoriaExistente->nome, $categoriaRecuperada->nome);
+    }
+}
