@@ -1,0 +1,406 @@
+//listagem de categorias
+
+php artisan make:controller CategoriaController
+
+<?php
+
+namespace App\Http\Controllers;
+
+use Illuminate\Http\Request;
+
+class CategoriaController extends Controller
+{
+    public function index()
+    {
+        $categorias = [
+            'CELULARES',
+            'INFORMÁTICA',
+            'MÓVEIS',
+            'AUTOMOTIVA',
+            'LIVROS',
+            'BELEZA',
+            'ESPORTE',
+            'LUXO',
+        ];
+
+        return view('categorias.index', ['categorias' => $categorias]);
+    }
+}
+
+php artisan make:view categorias.index
+
+
+<!-- resources/views/categorias/index.blade.php -->
+
+@extends('layouts.app')
+
+@section('content')
+    <h1>Categorias</h1>
+
+    <ul>
+        @foreach($categorias as $categoria)
+            <li>{{ $categoria }}</li>
+        @endforeach
+    </ul>
+@endsection
+
+
+<!-- resources/views/layouts/app.blade.php -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@yield('title')</title>
+</head>
+<body>
+    <div class="container">
+        @yield('content')
+    </div>
+</body>
+</html>
+
+
+<!-- resources/views/categorias/index.blade.php -->
+
+@extends('layouts.app')
+
+@section('title', 'Categorias')
+
+@section('content')
+    <h1>Categorias</h1>
+
+    <ul>
+        @foreach($categorias as $categoria)
+            <li>{{ $categoria }}</li>
+        @endforeach
+    </ul>
+@endsection
+
+
+// routes/web.php
+
+use App\Http\Controllers\CategoriaController;
+
+Route::get('/categorias', [CategoriaController::class, 'index']);
+
+
+php artisan serve
+
+
+//categorias no SQLite
+
+php artisan make:migration create_categorias_table
+
+// database/migrations/2023_01_01_create_categorias_table.php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+class CreateCategoriasTable extends Migration
+{
+    public function up()
+    {
+        Schema::create('categorias', function (Blueprint $table) {
+            $table->id();
+            $table->string('nome', 128);
+            $table->timestamps();
+        });
+    }
+
+    public function down()
+    {
+        Schema::dropIfExists('categorias');
+    }
+}
+
+php artisan migrate
+
+php artisan make:model Categoria
+
+
+// app/Models/Categoria.php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+
+class Categoria extends Model
+{
+    use HasFactory;
+
+    protected $fillable = ['nome'];
+}
+
+// app/Http/Controllers/CategoriaController.php
+
+namespace App\Http\Controllers;
+
+use App\Models\Categoria;
+
+class CategoriaController extends Controller
+{
+    public function index()
+    {
+        $categorias = Categoria::all();
+
+        return view('categorias.index', ['categorias' => $categorias]);
+    }
+}
+
+//inserção de nova categoria
+
+// routes/web.php
+
+use App\Http\Controllers\CategoriaController;
+
+Route::get('/categorias/criar', [CategoriaController::class, 'create']);
+
+// app/Http/Controllers/CategoriaController.php
+
+public function create()
+{
+    return view('categorias.create');
+}
+
+<!-- resources/views/categorias/create.blade.php -->
+
+@extends('layouts.app')
+
+@section('content')
+    <h2>Adicionar Categoria</h2>
+
+    <form action="{{ url('/categorias/salvar') }}" method="post">
+        @csrf
+        <label for="nome">Nome:</label>
+        <input type="text" name="nome" id="nome" required>
+        <br>
+
+        <button type="submit">Adicionar</button>
+    </form>
+
+    <br>
+    <a href="{{ url('/categorias') }}">Voltar para a Lista de Categorias</a>
+@endsection
+
+<!-- resources/views/categorias/index.blade.php -->
+
+@extends('layouts.app')
+
+@section('content')
+    <h2>Categorias</h2>
+
+    <ul>
+        @foreach($categorias as $categoria)
+            <li>{{ $categoria->nome }}</li>
+        @endforeach
+    </ul>
+
+    <a href="{{ url('/categorias/criar') }}">Adicionar Categoria</a>
+@endsection
+
+// routes/web.php
+
+Route::post('/categorias/salvar', [CategoriaController::class, 'store']);
+
+// app/Http/Controllers/CategoriaController.php
+
+public function store(Request $request)
+{
+    $request->validate([
+        'nome' => 'required|max:128',
+    ]);
+
+    Categoria::create($request->all());
+
+    return redirect('/categorias')->with('success', 'Categoria adicionada com sucesso!');
+}
+
+//melhorias no cadastro de categorias
+
+// app/Models/Categoria.php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+
+class Categoria extends Model
+{
+    protected $fillable = ['nome'];
+}
+
+php artisan make:controller CategoriaController --resource
+
+// routes/web.php
+
+use App\Http\Controllers\CategoriaController;
+
+Route::resource('categorias', CategoriaController::class)->only([
+    'index', 'create', 'store'
+]);
+
+// app/Http/Controllers/CategoriaController.php
+
+use App\Models\Categoria;
+use Illuminate\Http\Request;
+
+public function store(Request $request)
+{
+    $request->validate([
+        'nome' => 'required|min:3',
+    ]);
+
+    Categoria::create($request->all());
+
+    return redirect(route('categorias.index'))->with('success', 'Categoria adicionada com sucesso!');
+}
+
+// app/Http/Controllers/CategoriaController.php
+
+use App\Models\Categoria;
+
+public function index()
+{
+    $categorias = Categoria::orderBy('nome')->get();
+
+    return view('categorias.index', compact('categorias'));
+}
+<!-- resources/views/categorias/index.blade.php -->
+
+@extends('layouts.app')
+
+@section('content')
+    @if (session('success'))
+        <div class="alert alert-success">
+            {{ session('success') }}
+        </div>
+    @endif
+
+    <h2>Categorias</h2>
+
+    <ul>
+        @foreach($categorias as $categoria)
+            <li>{{ $categoria->nome }}</li>
+        @endforeach
+    </ul>
+
+    <a href="{{ route('categorias.create') }}">Adicionar Categoria</a>
+@endsection
+
+//remoçao de categorias
+
+// app/Http/Controllers/CategoriaController.php
+
+use App\Models\Categoria;
+use Illuminate\Http\Request;
+
+// ...
+
+public function destroy($id)
+{
+    $categoria = Categoria::findOrFail($id);
+    $categoria->delete();
+
+    return redirect(route('categorias.index'))->with('success', 'Categoria removida com sucesso!');
+}
+
+// routes/web.php
+
+use App\Http\Controllers\CategoriaController;
+
+Route::resource('categorias', CategoriaController::class)->only([
+    'index', 'create', 'store', 'destroy'
+]);
+
+<!-- resources/views/categorias/index.blade.php -->
+
+@extends('layouts.app')
+
+@section('content')
+    @if (session('success'))
+        <div class="alert alert-success">
+            {{ session('success') }}
+        </div>
+    @endif
+
+    <h2>Categorias</h2>
+
+    <ul>
+        @foreach($categorias as $categoria)
+            <li>
+                {{ $categoria->nome }}
+                <form method="post" action="{{ route('categorias.destroy', $categoria->id) }}" style="display: inline;">
+                    @csrf
+                    @method('delete')
+                    <button type="submit">Remover</button>
+                </form>
+            </li>
+        @endforeach
+    </ul>
+
+    <a href="{{ route('categorias.create') }}">Adicionar Categoria</a>
+@endsection
+
+//edicao de categorias
+
+// app/Http/Controllers/CategoriaController.php
+
+use App\Models\Categoria;
+use App\Http\Requests\CategoriaRequest;
+use Illuminate\Http\Request;
+
+// ...
+
+public function edit($id)
+{
+    $categoria = Categoria::findOrFail($id);
+    return view('categorias.edit', compact('categoria'));
+}
+
+public function update(CategoriaRequest $request, $id)
+{
+    $categoria = Categoria::findOrFail($id);
+    $categoria->update($request->all());
+
+    return redirect(route('categorias.index'))->with('success', 'Categoria atualizada com sucesso!');
+}
+php artisan make:request CategoriaRequest
+// routes/web.php
+
+use App\Http\Controllers\CategoriaController;
+
+Route::resource('categorias', CategoriaController::class)->only([
+    'index', 'create', 'store', 'edit', 'update', 'destroy'
+]);
+<!-- resources/views/categorias/edit.blade.php -->
+
+@extends('layouts.app')
+
+@section('content')
+    <h2>Editar Categoria</h2>
+
+    @if ($errors->any())
+        <div class="alert alert-danger">
+            <ul>
+                @foreach ($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
+
+    <form method="post" action="{{ route('categorias.update', $categoria->id) }}">
+        @csrf
+        @method('put')
+
+        <label for="nome">Nome:</label>
+        <input type="text" name="nome" id="nome" value="{{ old('nome', $categoria->nome) }}" required>
+        <br>
+
+        <button type="submit">Atualizar Categoria</button>
+    </form>
+@endsection
+
