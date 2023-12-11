@@ -1,0 +1,262 @@
+<?php
+
+use PHPUnit\Framework\TestCase;
+
+class ProdutoTest extends TestCase
+{
+    public function testCriarProduto()
+    {
+        $produto = new Produto('O Senhor dos Aneis: A Sociedade do Anel', 39.90, 100;
+
+        $this->assertInstanceOf(Produto::class, $produto);
+        $this->assertEquals('Camiseta', $produto->getNome());
+        $this->assertEquals(39.90, $produto->getPreco());
+        $this->assertEquals(100, $produto->getQuantidadeEstoque());
+    }
+
+    public function testAdicionarProduto()
+    {
+        $produto = new Produto('O Senhor dos Aneis: A Sociedade do Anel', 39.90, 100);
+        $produto->adicionarProduto(20);
+
+        $this->assertEquals(70, $produto->getQuantidadeEstoque());
+    }
+
+    public function testRemoverProdutoComQuantidadeValida()
+    {
+        $produto = new Produto('O Senhor dos Aneis: A Sociedade do Anel', 39.90, 100);
+        $produto->removerProduto(10);
+
+        $this->assertEquals(90, $produto->getQuantidadeEstoque());
+    }
+
+    public function testRemoverProdutoComQuantidadeInvalida()
+    {
+        $produto = new Produto('O Senhor dos Aneis: A Sociedade do Anel', 39.90, 100);
+
+        $this->expectException(Exception::class);
+        $this->expectExceptionMessage('Erro: Quantidade solicitada maior que o estoque disponível.');
+
+        $produto->removerProduto(60);
+    }
+
+    public function testCalcularValorTotal()
+    {
+        $produto = new Produto('O Senhor dos Aneis: A Sociedade do Anel', 39.90, 100);
+
+        $this->assertEquals(89.70, $produto->calcularValorTotal());
+    }
+}
+
+<?php
+
+class PedidoTest extends TestCase
+{
+    public function testCriarPedido()
+    {
+        $cliente = new Cliente('João das Neves', 'joaodasneves@email.com', '(14) 99876-5432', 'Rua Principal da Cidade');
+        $produto = new Produto('O Senhor dos Anéis: A Sociedade do Anel', 39.90, 50);
+
+        $pedido = new Pedido(1, $cliente, [$produto]);
+
+        $this->assertInstanceOf(Pedido::class, $pedido);
+        $this->assertEquals(1, $pedido->getId());
+        $this->assertSame($cliente, $pedido->getCliente());
+        $this->assertSame([$produto], $pedido->getProdutos());
+    }
+
+    public function testAdicionarProdutoAoPedido()
+    {
+        $cliente = new Cliente('João das Neves', 'joaodasneves@email.com', '(14) 99876-5432', 'Rua Principal da Cidade');
+        $produto1 = new Produto('O Senhor dos Anéis: A Sociedade do Anel', 39.90, 50);
+        $produto2 = new Produto('O Hobbit', 29.99, 30);
+
+        $pedido = new Pedido(1, $cliente, [$produto1]);
+        $pedido->adicionarProduto($produto2);
+
+        $this->assertCount(2, $pedido->getProdutos());
+        $this->assertContains($produto2, $pedido->getProdutos());
+    }
+
+    public function testRemoverProdutoDoPedido()
+    {
+        $cliente = new Cliente('João das Neves', 'joaodasneves@email.com', '(14) 99876-5432', 'Rua Principal da Cidade');
+        $produto1 = new Produto('O Senhor dos Anéis: A Sociedade do Anel', 39.90, 50);
+        $produto2 = new Produto('O Hobbit', 29.99, 30);
+
+        $pedido = new Pedido(1, $cliente, [$produto1, $produto2]);
+        $pedido->removerProduto($produto1);
+
+        $this->assertCount(1, $pedido->getProdutos());
+        $this->assertNotContains($produto1, $pedido->getProdutos());
+    }
+}
+
+
+<?php
+
+use PHPUnit\Framework\TestCase;
+
+class ClienteTest extends TestCase
+{
+    public function testCriarCliente()
+    {
+        $cliente = new Cliente('João das Neves', 'joaodasneves@email.com', '(14) 99876-5432', 'Rua Principal da Cidade');
+
+        $this->assertInstanceOf(Cliente::class, $cliente);
+        $this->assertEquals('João das Neves', $cliente->getNome());
+        $this->assertEquals('joaodasneves@email.com', $cliente->getEmail());
+        $this->assertEquals('(14) 99876-5432', $cliente->getCelular());
+        $this->assertEquals('Rua Principal da Cidade', $cliente->getEndereco());
+        $this->assertEquals(0, $cliente->getTotalCompras());
+    }
+
+    public function testFormatarCelular()
+    {
+        $cliente = new Cliente('João das Neves', 'joaodasneves@email.com', '(14) 99876-5432', 'Rua Principal da Cidade');
+
+        $this->assertEquals('(14) 99876-5432', $cliente->formatarCelular());
+    }
+
+    public function testAdicionarPedidoAoCliente()
+    {
+        $cliente = new Cliente('João das Neves', 'joaodasneves@email.com', '(14) 99876-5432', 'Rua Principal da Cidade');
+        $produto = new Produto('O Senhor dos Anéis: A Sociedade do Anel', 39.90, 50);
+        $pedido = new Pedido(1, $cliente, [$produto]);
+
+        $cliente->adicionarPedido($pedido);
+
+        $this->assertCount(1, $cliente->getPedidos());
+        $this->assertContains($pedido, $cliente->getPedidos());
+    }
+}
+
+<?php
+
+use PHPUnit\Framework\TestCase;
+
+class CarrinhoDeComprasTest extends TestCase
+{
+    public function testAdicionarProdutoAoCarrinho()
+    {
+        $carrinho = new CarrinhoDeCompras();
+        $produto = new Produto('Camiseta', 29.90, 50);
+
+        $carrinho->adicionarProduto($produto);
+
+        $this->assertCount(1, $carrinho->getProdutos());
+        $this->assertContains($produto, $carrinho->getProdutos());
+    }
+
+    public function testRemoverProdutoDoCarrinho()
+    {
+        $carrinho = new CarrinhoDeCompras();
+        $produto = new Produto('Camiseta', 29.90, 50);
+
+        $carrinho->adicionarProduto($produto);
+        $carrinho->removerProduto($produto);
+
+        $this->assertCount(0, $carrinho->getProdutos());
+        $this->assertNotContains($produto, $carrinho->getProdutos());
+    }
+
+    public function testCalcularDescontoNoCarrinho()
+    {
+        $carrinho = new CarrinhoDeCompras();
+        $produto = new Produto('Camiseta', 50.00, 2);
+
+        $carrinho->adicionarProduto($produto);
+
+        $this->assertEquals(0, $carrinho->calcularDesconto());
+
+        $produto2 = new Produto('Calça', 60.00, 2);
+        $carrinho->adicionarProduto($produto2);
+
+        $this->assertEquals(11.00, $carrinho->calcularDesconto());
+    }
+
+    public function testCalcularFreteNoCarrinho()
+    {
+        $carrinho = new CarrinhoDeCompras();
+        $produto = new Produto('Camiseta', 50.00, 2);
+
+        $carrinho->adicionarProduto($produto);
+
+        $this->assertEquals(9.99, $carrinho->calcularFrete());
+
+        $produto2 = new Produto('Calça', 60.00, 2);
+        $carrinho->adicionarProduto($produto2);
+
+        $this->assertEquals(0, $carrinho->calcularFrete());
+    }
+
+    public function testCalcularTotalNoCarrinho()
+    {
+        $carrinho = new CarrinhoDeCompras();
+        $produto = new Produto('Camiseta', 50.00, 2);
+
+        $carrinho->adicionarProduto($produto);
+
+        $this->assertEquals(100.00, $carrinho->calcularTotal());
+
+        $produto2 = new Produto('Calça', 60.00, 2);
+        $carrinho->adicionarProduto($produto2);
+
+        $this->assertEquals(120.00, $carrinho->calcularTotal());
+    }
+}
+
+
+<?php
+
+use PHPUnit\Framework\TestCase;
+
+class MeioDePagamentoTest extends TestCase
+{
+    public function testPagamentoComPix()
+    {
+        $apiPagamentosMock = $this->createMock(ApiPagamentos::class);
+
+        $apiPagamentosMock->expects($this->once())
+            ->method('processarPagamento')
+            ->with($this->equalTo('Pix'), $this->equalTo(100.00))
+            ->willReturn(true);
+
+        $pix = new Pix($apiPagamentosMock);
+        $resultado = $pix->realizarPagamento(100.00);
+
+        $this->assertTrue($resultado);
+    }
+
+    public function testPagamentoComCartaoCredito()
+    {
+        $apiPagamentosMock = $this->createMock(ApiPagamentos::class);
+
+        $apiPagamentosMock->expects($this->once())
+            ->method('processarPagamento')
+            ->with($this->equalTo('Cartão de Crédito'), $this->equalTo(150.00))
+            ->willReturn(true);
+
+        $cartaoCredito = new CartaoCredito($apiPagamentosMock);
+        $resultado = $cartaoCredito->realizarPagamento(150.00);
+
+        $this->assertTrue($resultado);
+    }
+
+    public function testPagamentoComBoleto()
+    {
+        $apiPagamentosMock = $this->createMock(ApiPagamentos::class);
+
+        $apiPagamentosMock->expects($this->once())
+            ->method('processarPagamento')
+            ->with($this->equalTo('Boleto'), $this->equalTo(80.00))
+            ->willReturn(true);
+
+        $boleto = new Boleto($apiPagamentosMock);
+        $resultado = $boleto->realizarPagamento(80.00);
+
+        $this->assertTrue($resultado);
+    }
+}
+
+
