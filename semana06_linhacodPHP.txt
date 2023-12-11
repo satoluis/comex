@@ -1,0 +1,362 @@
+//criando clientes
+class Cliente {
+    private $nome;
+    private $email;
+    private $celular;
+    private $endereco;
+    private $totalCompras;
+
+    public function __construct($nome, $email, $celular, $endereco) {
+        $this->nome = $nome;
+        $this->email = $email;
+        $this->celular = $celular;
+        $this->endereco = $endereco;
+        $this->totalCompras = 0; // Inicializa o total de compras como zero
+    }
+
+    
+    public function getNome() {
+        return $this->nome;
+    }
+
+    public function getEmail() {
+        return $this->email;
+    }
+
+    public function getCelular() {
+        return $this->celular;
+    }
+
+    public function getEndereco() {
+        return $this->endereco;
+    }
+
+    public function getTotalCompras() {
+        return $this->totalCompras;
+    }
+
+    
+    public function setNome($nome) {
+        $this->nome = $nome;
+    }
+
+    public function setEmail($email) {
+        $this->email = $email;
+    }
+
+    public function setCelular($celular) {
+        $this->celular = $celular;
+    }
+
+    public function setEndereco($endereco) {
+        $this->endereco = $endereco;
+    }
+
+ 
+    public function adicionarCompra($valorCompra) {
+        $this->totalCompras += $valorCompra;
+    }
+}
+
+
+$cliente = new Cliente('João da Silva Sauro', 'joaossauro@email.com', '(14) 98765-4321', 'Rua Principal, 123, Bairro Central, Cidade');
+
+
+echo "Nome: " . $cliente->getNome() . PHP_EOL;
+echo "E-mail: " . $cliente->getEmail() . PHP_EOL;
+echo "Celular: " . $cliente->getCelular() . PHP_EOL;
+echo "Endereço: " . $cliente->getEndereco() . PHP_EOL;
+echo "Total de compras: R$ " . $cliente->getTotalCompras() . PHP_EOL;
+
+
+$cliente->adicionarCompra(150.00);
+
+
+echo "Novo total de compras: R$ " . $cliente->getTotalCompras() . PHP_EOL;
+
+//criando produtos
+
+class Produto {
+    private $nome;
+    private $preco;
+    private $quantidadeEstoque;
+
+    public function __construct($nome, $preco, $quantidadeEstoque) {
+        $this->nome = $nome;
+        $this->preco = $preco;
+        $this->quantidadeEstoque = $quantidadeEstoque;
+    }
+
+    public function getNome() {
+        return $this->nome;
+    }
+
+    public function getPreco() {
+        return $this->preco;
+    }
+
+    public function getQuantidadeEstoque() {
+        return $this->quantidadeEstoque;
+    }
+
+    public function setNome($nome) {
+        $this->nome = $nome;
+    }
+
+    public function setPreco($preco) {
+        $this->preco = $preco;
+    }
+
+    public function setQuantidadeEstoque($quantidadeEstoque) {
+        $this->quantidadeEstoque = $quantidadeEstoque;
+    }
+
+    public function adicionarProduto($quantidade) {
+        $this->quantidadeEstoque += $quantidade;
+    }
+
+    public function removerProduto($quantidade) {
+        if ($quantidade <= $this->quantidadeEstoque) {
+            $this->quantidadeEstoque -= $quantidade;
+        } else {
+            echo "Erro: Quantidade solicitada maior que o estoque disponível." . PHP_EOL;
+        }
+    }
+
+    // Método para calcular o valor total em produtos no estoque
+    public function calcularValorTotal() {
+        return $this->preco * $this->quantidadeEstoque;
+    }
+}
+
+$produto = new Produto('Camiseta', 29.90, 50);
+
+echo "Nome: " . $produto->getNome() . PHP_EOL;
+echo "Preço: R$ " . $produto->getPreco() . PHP_EOL;
+echo "Quantidade em estoque: " . $produto->getQuantidadeEstoque() . PHP_EOL;
+
+$produto->adicionarProduto(20);
+
+echo "Nova quantidade em estoque: " . $produto->getQuantidadeEstoque() . PHP_EOL;
+
+$produto->removerProduto(10);
+
+echo "Nova quantidade em estoque: " . $produto->getQuantidadeEstoque() . PHP_EOL;
+
+echo "Valor total em estoque: R$ " . $produto->calcularValorTotal() . PHP_EOL;
+
+//criando pedidos
+
+class Pedido {
+    private $id;
+    private $cliente;
+    private $produtos;
+
+    public function __construct($id, $cliente, $produtos) {
+        $this->id = $id;
+        $this->cliente = $cliente;
+        $this->produtos = $produtos;
+    }
+
+    public function getId() {
+        return $this->id;
+    }
+
+    public function getCliente() {
+        return $this->cliente;
+    }
+
+    public function getProdutos() {
+        return $this->produtos;
+    }
+
+    public function setId($id) {
+        $this->id = $id;
+    }
+
+    public function setCliente($cliente) {
+        $this->cliente = $cliente;
+    }
+
+    public function setProdutos($produtos) {
+        $this->produtos = $produtos;
+    }
+}
+
+//criando pedido cliente
+
+class Cliente {
+    private $nome;
+    private $email;
+    private $celular;
+    private $endereco;
+    private $pedidos;
+
+    public function __construct($nome, $email, $celular, $endereco) {
+        $this->nome = $nome;
+        $this->email = $email;
+        $this->celular = $celular;
+        $this->endereco = $endereco;
+        $this->pedidos = [];
+    }
+
+    public function getNome() {
+        return $this->nome;
+    }
+
+    public function getEmail() {
+        return $this->email;
+    }
+
+    public function getCelular() {
+        return $this->celular;
+    }
+
+    public function getEndereco() {
+        return $this->endereco;
+    }
+
+    public function getPedidos() {
+        return $this->pedidos;
+    }
+
+    public function setNome($nome) {
+        $this->nome = $nome;
+    }
+
+    public function setEmail($email) {
+        $this->email = $email;
+    }
+
+    public function setCelular($celular) {
+        $this->celular = $celular;
+    }
+
+    public function setEndereco($endereco) {
+        $this->endereco = $endereco;
+    }
+
+    public function setPedidos($pedidos) {
+        $this->pedidos = $pedidos;
+    }
+
+    public function adicionarPedido($pedido) {
+        $this->pedidos[] = $pedido;
+    }
+}
+
+$cliente = new Cliente('João das Neves', 'joaodasneves@email.com', '(14) 99876-5432', 'Rua Principal da Cidade');
+
+$produto = new Produto('O Senhor dos Aneis: A Sociedade do Anel', 39.90, 50);
+$pedido = new Pedido(1, $cliente, [$produto]);
+
+$cliente->adicionarPedido($pedido);
+
+echo "Pedidos do Cliente " . $cliente->getNome() . ":" . PHP_EOL;
+foreach ($cliente->getPedidos() as $pedido) {
+    echo "- ID do Pedido: " . $pedido->getId() . PHP_EOL;
+}
+
+//criando carrinho de compras
+
+class CarrinhoDeCompras {
+    private $produtos;
+
+    public function __construct() {
+        $this->produtos = [];
+    }
+
+    public function adicionarProduto(Produto $produto) {
+        $this->produtos[] = $produto;
+    }
+
+    public function removerProduto(Produto $produto) {
+        $indice = array_search($produto, $this->produtos);
+        if ($indice !== false) {
+            unset($this->produtos[$indice]);
+        }
+    }
+
+    public function calcularDesconto() {
+        $valorTotal = $this->calcularTotal();
+        return $valorTotal >= 100 ? $valorTotal * 0.1 : 0;
+    }
+
+    public function calcularFrete() {
+        $valorTotal = $this->calcularTotal();
+        return $valorTotal >= 100 ? 0 : 9.99;
+    }
+
+    public function calcularTotal() {
+        $total = 0;
+        foreach ($this->produtos as $produto) {
+            $total += $produto->getPreco();
+        }
+        return $total;
+    }
+}
+
+//mascara de celular
+class Cliente {
+    private $nome;
+    private $email;
+    private $celular;
+    private $endereco;
+    private $totalCompras;
+
+    public function __construct($nome, $email, $celular, $endereco) {
+        $this->nome = $nome;
+        $this->email = $email;
+        $this->celular = $celular;
+        $this->endereco = $endereco;
+        $this->totalCompras = 0;
+    }
+
+    public function getNome() {
+        return $this->nome;
+    }
+
+    public function setNome($nome) {
+        $this->nome = $nome;
+    }
+
+    public function getEmail() {
+        return $this->email;
+    }
+
+    public function setEmail($email) {
+        $this->email = $email;
+    }
+
+    public function getCelular() {
+        return $this->celular;
+    }
+
+    public function setCelular($celular) {
+        $this->celular = $celular;
+    }
+
+    public function getEndereco() {
+        return $this->endereco;
+    }
+
+    public function setEndereco($endereco) {
+        $this->endereco = $endereco;
+    }
+
+    public function getTotalCompras() {
+        return $this->totalCompras;
+    }
+
+    public function setTotalCompras($totalCompras) {
+        $this->totalCompras = $totalCompras;
+    }
+
+    public function formatarCelular() {
+        $celularNumerico = preg_replace('/[^0-9]/', '', $this->celular);
+
+        $celularFormatado = vsprintf("(%2s) %5s-%4s", str_split($celularNumerico));
+
+        return $celularFormatado;
+    }
+}
